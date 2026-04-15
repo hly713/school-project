@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>各维度平均分图表</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>#main { width: 90%; height: 600px; margin: 20px auto; }</style>
+</head>
+<body>
+    <div id="main"></div>
+    <script>
+        var myChart = echarts.init(document.getElementById('main'));
+        var dimensionData = [
+            { name: '课堂学习', score: 2.74 },
+            { name: '科普阅读', score: 7.27 },
+            { name: '项目实践', score: 6.85 },
+            { name: '科技竞赛', score: 6.92 }
+        ];
+        const levelConfig = {
+            A: { name: '优秀', color: '#4CAF50', threshold: 20 },
+            B: { name: '良好', color: '#1E88E5', threshold: 15 },
+            C: { name: '合格', color: '#FF9800', threshold: 10 },
+            D: { name: '待提升', color: '#F44336', threshold: 0 }
+        };
+        const getLevel = (score) => {
+            if (score > levelConfig.A.threshold) return 'A';
+            if (score > levelConfig.B.threshold) return 'B';
+            if (score > levelConfig.C.threshold) return 'C';
+            return 'D';
+        };
+        const xData = dimensionData.map(item => item.name);
+        const scoreData = dimensionData.map(item => item.score);
+        const levelData = dimensionData.map(item => getLevel(item.score));
+        const colorData = levelData.map(level => levelConfig[level].color);
+        var option = {
+            title: { text: '各维度平均分' },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' },
+                formatter: (params) => {
+                    const { name, value } = params[0];
+                    const level = getLevel(value);
+                    return `${name}<br/>平均分: ${value}分<br/>等级: ${level} (${levelConfig[level].name})`;
+                }
+            },
+            xAxis: { type: 'category', data: xData, axisLabel: { fontSize: 14 } },
+            yAxis: { type: 'value', name: '平均分', min: 0, max: 25, axisLabel: { fontSize: 14 } },
+            series: [{
+                name: '平均分',
+                type: 'bar',
+                data: scoreData,
+                itemStyle: { color: (params) => colorData[params.dataIndex] },
+                label: {
+                    show: true,
+                    position: 'top',
+                    formatter: (params) => {
+                        const level = getLevel(params.value);
+                        return `等级: ${level}`;
+                    },
+                    fontSize: 14
+                },
+                barWidth: '60%'
+            }],
+            legend: { data: ['课堂学习', '科普阅读', '项目实践', '科技竞赛'], bottom: 10 },
+            grid: { left: '10%', right: '10%', bottom: '15%', top: '15%' }
+        };
+        myChart.setOption(option);
+        window.addEventListener('resize', () => myChart.resize());
+    </script>
+</body>
+</html>
